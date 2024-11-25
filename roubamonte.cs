@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace rouba_monte
 
         public void Iniciar()
         {
-            int qtdJogadores;
+            int qtdJogadores = 0;
 
             do
             {
@@ -54,17 +55,19 @@ namespace rouba_monte
             Jogar();
             Ranking();
 
-            Console.WriteLine("Deseja jogar uma nova partida? (sim/nao)");
+            Console.WriteLine("Deseja jogar novamente? (sim/nao)");
             string resp = Console.ReadLine();
 
-            if (resp == "sim" || resp == "SIM")
+            resp.ToLower();
+
+            if (resp == "sim")
             {
                 Iniciar();
             }
 
-            else if (resp == "nao" || resp == "nao")
+            else if (resp == "nao")
             {
-                Console.WriteLine("FIM!!!");
+                Console.WriteLine("GAME OVER!!!");
             }
 
             else
@@ -81,7 +84,7 @@ namespace rouba_monte
 
             while (jogoAtivo)
             {
-                if (monte_de_compra.topo > 0)
+                if (monte_de_compra.Topo > 0)
                 {
                     foreach (var jogador in jogadores)
                     {
@@ -92,9 +95,9 @@ namespace rouba_monte
                 else
                 {
                     Console.WriteLine("Acabaram as cartas do monte de compras.");
-                    Console.WriteLine("Agora, vamos ver quem está com o maior monte...");
+                    Console.WriteLine("Agora, vamos verificar que está com o maior monte...");
 
-                    // verificar se tem empate, senao mostrar vencedor.
+                    // ganhandor ou ganhadores, etc.
 
                     jogoAtivo = false;
                 }
@@ -165,22 +168,224 @@ namespace rouba_monte
 
         public void RodadaJogador(Jogador jogador)
         {
-            /* Console.WriteLine("Vez do Jogador: {0}", jogador.nome);
+            Console.Clear();
 
-            jogador.Monte.Push(monte_de_compra.Pop());
-            jogador.AtualizarQtdCartas();
+            Carta cartaDaVez = monte_de_compra.Pop();
+            string jogadorDaVez = jogador.Nome;
 
-            Console.WriteLine("Comprando carta do monte...");
-            Console.WriteLine("Carta da vez: {0}", jogador.Monte.Peek());
+            foreach (var outroJogador in jogadores)
+            {
+                bool possui = false;
 
+                int maiorQtdCartas = 0;
+
+                Jogador jogadorMaiorQtdCartas1 = null;
+                Jogador jogadorMaiorQtdCartas2 = null;
+
+                if (cartaDaVez == outroJogador.Monte.Peek() && outroJogador.Nome != jogadorDaVez)
+                {
+                    possui = true;
+
+                    if (maiorQtdCartas == outroJogador.QtdCartas)
+                    {
+                        jogadorMaiorQtdCartas2 = outroJogador;
+                    }
+
+                    else if (maiorQtdCartas < outroJogador.QtdCartas)
+                    {
+                        jogadorMaiorQtdCartas1 = outroJogador;
+
+                    }
+                }
+
+                if (possui)
+                {
+                    Console.WriteLine("Vez do Jogador: {0}", jogador.Nome);
+                    Console.WriteLine("Comprando carta do monte...");
+                    Console.WriteLine("Carta da vez: " + cartaDaVez);
+
+                    Console.WriteLine();
+                    Console.WriteLine("Área de Descarte:");
+                    MostrarAreaDescarte();
+
+                    Console.WriteLine();
+                    Console.WriteLine("Monte dos Jogadores:");
+                    MostrarMontesJogadores();
+
+                    Console.WriteLine();
+
+                    if (jogadorMaiorQtdCartas1.QtdCartas == jogadorMaiorQtdCartas2.QtdCartas)
+                    {
+                        Console.WriteLine("A carta da vez é igual o monte de dois jogadores.");
+                        Console.WriteLine("Logo, você tera que roubar um monte.");
+                        Console.WriteLine("E ambos, possuem a mesma quantidade de cartas no monte,");
+                        Console.WriteLine("Então, será decidido na sorte...");
+
+                        Random random = new Random();
+                        int sorte = random.Next(1, 10);
+
+                        Jogador azarao = null;
+
+                        if (sorte % 2 == 0)
+                        {
+                            azarao = jogadorMaiorQtdCartas1;
+                        }
+
+                        else
+                        {
+                            azarao = jogadorMaiorQtdCartas2;
+                        }
+                            
+                        Console.WriteLine("O jogador que tera o monte roubado é: " + azarao.Nome);
+
+
+                        foreach(var jogadorEscolhido in jogadores)
+                        {
+                            if (jogadorEscolhido.Nome == azarao.Nome && jogadorEscolhido.QtdCartas == azarao.QtdCartas)
+                            {
+                                RoubarMonte(jogador, jogadorEscolhido, cartaDaVez);
+
+                                jogador.AtualizarQtdCartas();
+                                jogadorEscolhido.AtualizarQtdCartas();
+                            }
+                        }
+                    }
+
+                    else
+                    {
+                        Console.WriteLine("A carta da vez é igual o monte de um jogadores.");
+                        Console.WriteLine("Logo, você tera que roubar um monte.");
+
+                        Console.WriteLine("O jogador que tera o monte roubado é: " + jogadorMaiorQtdCartas1.Nome);
+
+                        foreach (var jogadorEscolhido in jogadores)
+                        {
+                            if (jogadorEscolhido.Nome == jogadorMaiorQtdCartas1.Nome && jogadorEscolhido.QtdCartas == jogadorMaiorQtdCartas1.QtdCartas)
+                            {
+                                RoubarMonte(jogador, jogadorEscolhido, cartaDaVez);
+
+                                jogador.AtualizarQtdCartas();
+                                jogadorEscolhido.AtualizarQtdCartas();
+                            }
+                        }
+                    }
+
+                    Console.WriteLine("Monte roubado!");
+
+                    Console.WriteLine();
+                    Console.WriteLine("Monte dos Jogadores, pós roubo:");
+                    MostrarMontesJogadores();
+
+                    Console.WriteLine();
+                    Console.WriteLine("Com isso, você compra mais uma carta.");
+                    RodadaJogador(jogador);
+                }
+            }
+
+            else if (area_de_descarte.ContainsValue(cartaDaVez.Valor))
+            {
+                Console.WriteLine("Vez do Jogador: {0}", jogador.Nome);
+                Console.WriteLine("Comprando carta do monte...");
+                Console.WriteLine("Carta da vez: " + cartaDaVez);
+
+                Console.WriteLine();
+                Console.WriteLine("Área de Descarte:");
+                MostrarAreaDescarte();
+
+                Console.WriteLine();
+                Console.WriteLine("Monte dos Jogadores:");
+                MostrarMontesJogadores();
+
+                Console.WriteLine();
+                Console.WriteLine("A carta da vez é diferente das cartas nos topos dos montes inimigos,");
+                Console.WriteLine("Porém, é igual a da área de descarte,");
+                Console.WriteLine("Logo, você a colocara no seu monte, juntamente com a carta da vez no topo.");
+
+                Carta cartaDaArea = null;
+
+                foreach (var carta in area_de_descarte)
+                {
+                    if (carta.Value == cartaDaVez.Valor)
+                    {
+                        cartaDaArea = new Carta(carta.Value, carta.Key.Nome);
+                        area_de_descarte.Remove(carta.Key);
+
+                        break;
+                    }
+                }
+
+                jogador.Monte.Push(cartaDaArea);
+                jogador.Monte.Push(cartaDaVez);
+                jogador.AtualizarQtdCartas();
+
+                Console.WriteLine();
+                Console.WriteLine("Área de Descarte, pós retirada:");
+                MostrarAreaDescarte();
+
+                Console.WriteLine();
+                Console.WriteLine("Com isso, você compra mais uma carta.");
+                RodadaJogador(jogador);
+            }
+
+            else if (cartaDaVez.Valor == jogador.Monte.Peek().Valor)
+            {
+                Console.WriteLine("Vez do Jogador: {0}", jogador.Nome);
+                Console.WriteLine("Comprando carta do monte...");
+                Console.WriteLine("Carta da vez: " + cartaDaVez);
+
+                Console.WriteLine();
+                Console.WriteLine("Monte dos Jogadores:");
+                MostrarMontesJogadores();
+
+                Console.WriteLine();
+                Console.WriteLine("Área de Descarte:");
+                MostrarAreaDescarte();
+
+                Console.WriteLine();
+                Console.WriteLine("A carta da vez é diferente das cartas nos topos dos montes inimigos,");
+                Console.WriteLine("Porém, é igual a do topo do seu  própio monte,");
+                Console.WriteLine("Logo, você a colocara no topo do seu monte:");
+
+                jogador.Monte.Push(cartaDaVez);
+                jogador.AtualizarQtdCartas();
+
+                Console.WriteLine();
+                Console.WriteLine("Monte dos Jogadores, pós inserção:");
+                MostrarMontesJogadores();
+
+                Console.WriteLine();
+                Console.WriteLine("Com isso, você compra mais uma carta.");
+                RodadaJogador(jogador);
+            }
+
+            else
+            {
+                Console.WriteLine("Vez do Jogador: {0}", jogador.Nome);
+                Console.WriteLine("Comprando carta do monte...");
+                Console.WriteLine("Carta da vez: " + cartaDaVez);
+
+                Console.WriteLine();
+                Console.WriteLine("Área de Descarte:");
+                MostrarAreaDescarte();
+
+                Console.WriteLine();
+                Console.WriteLine("Monte dos Jogadores:");
+                MostrarMontesJogadores();
+
+                Console.WriteLine();
+                Console.WriteLine("A carta da vez é diferente das cartas nos topos dos montes,");
+                Console.WriteLine("E é diferente das cartas na área de descarte,");
+                Console.WriteLine("Logo, você a descartará na área de descarte:");
+                
+                area_de_descarte.Add(cartaDaVez, cartaDaVez.Valor);
+
+                Console.WriteLine();
+                Console.WriteLine("Área de Descarte, pós inserção:");
+                MostrarAreaDescarte();
+            }
 
             Console.WriteLine();
-            Console.WriteLine("Área de Descarte");
-            MostrarAreaDescarte();
-
-            Console.WriteLine();
-            Console.WriteLine("Topo do monte dos jogadores");
-            MostrarMontesJogadores(); */
+            Console.WriteLine("Jogada encerrada, próximo jogador!");
         }
 
         public void MostrarAreaDescarte()
@@ -205,7 +410,7 @@ namespace rouba_monte
         {
             foreach (var jogador in jogadores)
             {
-                Console.WriteLine("Jogador: {0}", jogador.nome);
+                Console.WriteLine("Jogador: {0}", jogador.Nome);
 
                 if (jogador.Monte.Count > 0)
                 {
@@ -219,48 +424,72 @@ namespace rouba_monte
             }
         }
 
+        public void RoubarMonte(Jogador jogador1, Jogador jogador2, Carta cartaDaVez)
+        {
+            Stack<Carta> cartas = new Stack<Carta>();
+
+            foreach (var carta in jogador2.Monte)
+            {
+                cartas.Push(jogador2.Monte.Pop());
+            }
+
+            foreach (var carta in cartas)
+            {
+                jogador1.Monte.Push(cartas.Pop());
+            }
+
+            jogador1.Monte.Push(cartaDaVez);
+        }
+
         public void Ranking() { }
     }
 
     public class Jogador
     {
-        public string nome { get; set; }
-        private int qtdCartas { get; set; }
-        private int pontuacao { get; set; }
-        private int pontosRank { get; set; }
+        private string nome;
+        private int qtdCartas;
+        private int pontuacao;
 
-        public Stack<Carta> Monte { get; set; } = new Stack<Carta>();
+        private Stack<Carta> monte = new Stack<Carta>();
 
         public Jogador(string nome)
         {
             this.nome = nome;
             this.qtdCartas = 0;
             this.pontuacao = 0;
-            this.pontosRank = 0;
         }
 
         public void AtualizarQtdCartas()
         {
             qtdCartas = Monte.Count;
         }
+
+        public string Nome {  get { return nome; } set { nome = value; } }
+        public int QtdCartas { get { return qtdCartas; } set { qtdCartas = value; } }
+        public int Pontuacao { get { return pontuacao; } set { pontuacao = value; } }
+
+        public Stack<Carta> Monte { get { return monte; } set { monte = value; } }
     }
 
     public class Carta
     {
-        private int valor { get; set; }
-        private string nome { get; set; }
+        private int valor;
+        private string nome;
 
         public Carta(int valor, string nome)
         {
             this.valor = valor;
             this.nome = nome;
         }
+
+        public int Valor { get { return valor; } set { valor = value; } }
+        public string Nome { get { return nome; } set { nome = value; } }
     }
 
     class Pilha
     {
-        private Carta[] array { get; set; }
-        public int topo { get; set; }
+        private Carta[] array;
+        private int topo;
 
         public Pilha()
         {
@@ -296,5 +525,8 @@ namespace rouba_monte
 
             return array[topo];
         }
+
+        public Carta[] Array { get { return array; } set { array = value; } }
+        public int Topo { get { return topo; } set { topo = value; } }
     }
 }
