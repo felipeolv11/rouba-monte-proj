@@ -25,12 +25,14 @@ namespace roubamonteproj
 
         public void Iniciar()
         {
+            Reiniciar();
+
             int qtdJogadores = 0;
             int qtdBaralhos = 0;
 
             do
             {
-                Console.WriteLine("Quantos jogadores irão participar? (2-4)");
+                Console.WriteLine("> Quantos jogadores irão participar? (2-4)");
                 qtdJogadores = int.Parse(Console.ReadLine());
 
                 if (qtdJogadores < 2 || qtdJogadores > 4)
@@ -38,11 +40,11 @@ namespace roubamonteproj
                     Console.WriteLine("Opção inválida! Tente novamente.");
                 }
 
-            } while (qtdJogadores < 2 || qtdJogadores > 4);
+            } while (qtdJogadores < 2 || qtdJogadores > 4); ;
 
             do
             {
-                Console.WriteLine("Quantos baralhos vão ser utilizados? (1-4)");
+                Console.WriteLine("\n> Quantos baralhos vão ser utilizados? (1-4)");
                 qtdBaralhos = int.Parse(Console.ReadLine());
 
                 if (qtdBaralhos < 1 || qtdBaralhos > 4)
@@ -55,15 +57,23 @@ namespace roubamonteproj
             jogadores = new Jogador[qtdJogadores];
             monte_de_compra = new Pilha(52 * qtdBaralhos);
 
+            Console.WriteLine();
             for (int i = 0; i < qtdJogadores; i++)
             {
                 Console.Write($"Nome do jogador n{i + 1}: ");
                 string nome = Console.ReadLine();
+
                 jogadores[i] = new Jogador(nome);
             }
 
             Embaralhar(qtdBaralhos);
             Jogar();
+        }
+
+        private void Reiniciar()
+        {
+            monte_de_compra = new Pilha();
+            area_de_descarte = new Dictionary<Carta, int>();
         }
 
         public void Embaralhar(int qtdBaralhos)
@@ -176,7 +186,8 @@ namespace roubamonteproj
             {
                 if (monte_de_compra.Topo == 0)
                 {
-                    Console.WriteLine("O monte de compra acabou! Fim do jogo.");
+                    Console.WriteLine("\nO monte de compra acabou! Fim do jogo.");
+                    Console.ReadLine();
                     jogoAtivo = false;
                     break;
                 }
@@ -187,7 +198,8 @@ namespace roubamonteproj
 
                     if (monte_de_compra.Topo == 0)
                     {
-                        Console.WriteLine("O monte de compra acabou! Fim do jogo.");
+                        Console.WriteLine("\nO monte de compra acabou! Fim do jogo.");
+                        Console.ReadLine();
                         jogoAtivo = false;
                         break;
                     }
@@ -212,18 +224,45 @@ namespace roubamonteproj
                 }
             }
 
-            Console.WriteLine("\nResultado da Partida:");
+            List<Jogador> vencedores = new List<Jogador>();
+            int maiorQuantidade = jogadores[0].QtdCartas;
+            foreach (var jogador in jogadores)
+            {
+                if (jogador.QtdCartas == maiorQuantidade)
+                {
+                    vencedores.Add(jogador);
+                }
+            }
+
+            Console.Clear();
+            if (vencedores.Count == 1)
+            {
+                Console.WriteLine($"O grande vencedor é: {vencedores[0].Nome}, com {vencedores[0].QtdCartas} cartas!");
+            }
+
+            else
+            {
+                Console.WriteLine("Os grandes vencedores são:");
+                foreach (var vencedor in vencedores)
+                {
+                    Console.WriteLine($"{vencedor.Nome}, com {vencedor.QtdCartas} cartas!");
+                }
+            }
+
+            Console.ReadLine();
+            Console.WriteLine("Resultado da Partida:");
             for (int i = 0; i < jogadores.Count(); i++)
             {
                 var jogador = jogadores[i];
                 jogador.AtualizarPosicao(i + 1);
-                Console.WriteLine($"Posição: {i + 1}° | Jogador: {jogador.Nome} | Cartas no Monte: {jogador.QtdCartas}");
+                Console.WriteLine("Posição: {0}° | Jogador: {1} | Cartas no Monte: {2}", i + 1, jogador.Nome, jogador.QtdCartas);
             }
 
+            Console.ReadLine();
             string nomeJogador = "";
             do
             {
-                Console.WriteLine("\nDeseja ver o histórico de posições de algum jogador? (Digite 'nao' caso não desejar.)");
+                Console.WriteLine("\n> Deseja ver o histórico de posições de algum jogador? (Digite 'nao' para pular.)");
                 nomeJogador = Console.ReadLine();
 
                 if (nomeJogador.ToLower() != "nao")
@@ -248,7 +287,7 @@ namespace roubamonteproj
 
             } while (nomeJogador.ToLower() != "nao");
 
-            Console.WriteLine("Deseja jogar novamente? (sim/nao)");
+            Console.WriteLine("\nDeseja jogar novamente? (sim/nao)");
             string resp = Console.ReadLine();
 
             if (resp.ToLower() == "sim")
@@ -256,22 +295,31 @@ namespace roubamonteproj
                 Console.Clear();
                 Iniciar();
             }
-                
-            else if (resp.ToLower() == "nao")
-                Console.WriteLine("\nGAME OVER!!!");
 
-                
+            else if (resp.ToLower() == "nao")
+            {
+                Console.Write("\nGAME OVER!!!");
+            }
+
             else
+            {
                 Console.WriteLine("Resposta inválida! Tente novamente.");
+            }
         }
 
         public void RodadaJogador(Jogador jogador)
         {
-            Console.Clear();
-            Console.WriteLine("Jogador da Vez: {0}", jogador.Nome);
-
             while (true)
             {
+                if (monte_de_compra.Topo == 0)
+                {
+                    break;
+                }
+
+                Console.Clear();
+                Console.WriteLine("Monte de Compra (Cartas restantes: {0})", monte_de_compra.Topo - 1);
+                Console.WriteLine("\nJogador da Vez: {0}", jogador.Nome);
+
                 Carta cartaDaVez = monte_de_compra.Pop();
                 Console.WriteLine("Carta da Vez: " + cartaDaVez);
 
@@ -281,6 +329,7 @@ namespace roubamonteproj
                     propioTopoDoMonte = jogador.Monte.Peek();
                 }
 
+                Console.WriteLine("\n---------------------------------------------------------");
                 Console.WriteLine("\nMonte dos Jogadores:");
                 MostrarMontesJogadores();
 
@@ -289,26 +338,38 @@ namespace roubamonteproj
 
                 if (VerificarMontesAdversarios(jogador, cartaDaVez))
                 {
+                    Console.ReadLine();
+                    Console.WriteLine("Com isso o jogador pode comprar mais uma carta!");
+
                     MostrarEstadoAtual();
                     Console.ReadLine();
-                    break;
+                    continue;
                 }
 
                 if (VerificarAreaDeDescarte(jogador, cartaDaVez))
                 {
+                    Console.ReadLine();
+                    Console.WriteLine("Com isso o jogador pode comprar mais uma carta!");
+
                     MostrarEstadoAtual();
                     Console.ReadLine();
-                    break;
+                    continue;
                 }
 
                 if (VerificarPropioMonte(jogador, cartaDaVez, propioTopoDoMonte))
                 {
+                    Console.ReadLine();
+                    Console.WriteLine("Com isso o jogador pode comprar mais uma carta!");
+
                     MostrarEstadoAtual();
                     Console.ReadLine();
-                    break;
+                    continue;
                 }
 
                 AdicionarCartaDescarte(cartaDaVez);
+                Console.ReadLine();
+
+                Console.WriteLine("O jogador passou a vez!");
                 Console.ReadLine();
                 break;
             }
@@ -354,7 +415,7 @@ namespace roubamonteproj
 
                 Console.ReadLine();
                 Console.WriteLine("\nResumo:");
-                Console.WriteLine("Você roubou o monte do jogador '{0}'.", jogadorAlvo.Nome);
+                Console.WriteLine("Você roubou o monte do jogador {0}.", jogadorAlvo.Nome);
 
                 RoubarMonte(jogador, jogadorAlvo, cartaDaVez);
 
@@ -425,50 +486,15 @@ namespace roubamonteproj
 
             Console.Clear();
             Console.WriteLine("Estado Atual do Jogo:");
+            Console.WriteLine("\n---------------------------------------------------------");
             Console.WriteLine("\nMonte dos Jogadores:");
             MostrarMontesJogadores();
             Console.WriteLine("\nÁrea de Descarte:");
             MostrarAreaDescarte();
             Console.WriteLine();
 
-            if (monte_de_compra.Topo != 0)
-            {
-                Console.WriteLine("Próxima Rodada!");
-            }
-        }
-
-        public void MostrarAreaDescarte()
-        {
-            if (area_de_descarte.Count > 0)
-            {
-                foreach (var carta in area_de_descarte)
-                {
-                    Console.WriteLine("- " + carta.Key);
-                }
-            }
-
-            else
-            {
-                Console.WriteLine("[ VAZIO ]");
-            }
-        }
-
-        public void MostrarMontesJogadores()
-        {
-            foreach (var jogador in jogadores)
-            {
-                Console.WriteLine("Jogador: {0}", jogador.Nome);
-
-                if (jogador.Monte.Count > 0)
-                {
-                    Console.WriteLine("Topo do Monte: {0} (Tamanho: {1})", jogador.Monte.Peek(), jogador.QtdCartas);
-                }
-
-                else
-                {
-                    Console.WriteLine("Topo do Monte: [ VAZIO ]");
-                }
-            }
+            Console.ReadLine();
+            Console.Write("aperte ENTER para continuar...");
         }
 
         public void RoubarMonte(Jogador jogador1, Jogador jogador2, Carta cartaDaVez)
@@ -491,6 +517,46 @@ namespace roubamonteproj
             jogador1.AtualizarQtdCartas();
             jogador2.AtualizarQtdCartas();
         }
+
+        public void MostrarAreaDescarte()
+        {
+            Console.WriteLine();
+            if (area_de_descarte.Count > 0)
+            {
+                foreach (var carta in area_de_descarte)
+                {
+                    Console.WriteLine("- " + carta.Key);
+                }
+            }
+
+            else
+            {
+                Console.WriteLine("[ VAZIO ]");
+            }
+            Console.WriteLine("\n---------------------------------------------------------");
+        }
+
+        public void MostrarMontesJogadores()
+        {
+            Console.WriteLine();
+            foreach (var jogador in jogadores)
+            {
+                Console.WriteLine("Jogador: {0}", jogador.Nome);
+
+                if (jogador.Monte.Count > 0)
+                {
+                    Console.WriteLine("Topo do Monte: {0} (Tamanho: {1})", jogador.Monte.Peek(), jogador.QtdCartas);
+                }
+
+                else
+                {
+                    Console.WriteLine("Topo do Monte: [ VAZIO ]");
+                }
+
+                Console.WriteLine();
+            }
+            Console.WriteLine("---------------------------------------------------------");
+        }
     }
 
     public class Jogador
@@ -498,7 +564,7 @@ namespace roubamonteproj
         private string nome;
         private int qtdCartas;
         private int posicao;
-        private Queue<int> rank = new Queue<int>();
+        private Fila historicoPosicoes = new Fila();
         private Stack<Carta> monte = new Stack<Carta>();
 
         public Jogador(string nome)
@@ -515,28 +581,37 @@ namespace roubamonteproj
 
         public void AtualizarPosicao(int posicao)
         {
-            if (rank.Count == 5)
-            {
-                rank.Dequeue();
-            }
-
-            rank.Enqueue(posicao);
             this.posicao = posicao;
+
+            historicoPosicoes.Inserir(posicao);
+
+            if (historicoPosicoes.Count() > 5)
+            {
+                historicoPosicoes.Remover();
+            }
         }
 
         public void ExibirHistoricoPosicoes()
         {
-            Console.WriteLine("Histórico de '{0}':", Nome);
-            foreach (var pos in rank)
+            Console.WriteLine($"\nHistórico de {nome}:");
+
+            var atual = historicoPosicoes.Primeiro.Prox;
+            if (atual == null)
             {
-                Console.WriteLine("Posição: {0}°", pos);
+                Console.WriteLine("Sem histórico de posições.");
+                return;
+            }
+
+            while (atual != null)
+            {
+                Console.WriteLine($"- {atual.Elemento}° lugar");
+                atual = atual.Prox;
             }
         }
 
         public string Nome { get { return nome; } set { nome = value; } }
         public int QtdCartas { get { return qtdCartas; } set { qtdCartas = value; } }
         public int Posicao { get { return posicao; } set { posicao = value; } }
-        public Queue<int> Rank { get { return rank; } set { rank = value; } }
         public Stack<Carta> Monte { get { return monte; } set { monte = value; } }
     }
 
@@ -560,7 +635,7 @@ namespace roubamonteproj
         public string Naipe { get { return naipe; } set { naipe = value; } }
     }
 
-    class Pilha
+    public class Pilha
     {
         private Carta[] array;
         private int topo;
@@ -584,7 +659,7 @@ namespace roubamonteproj
         public void Push(Carta carta)
         {
             if (topo >= array.Length)
-                throw new Exception("Erro! Pilha cheia.");
+                throw new Exception("Erro!");
 
             array[topo] = carta;
             topo++;
@@ -593,7 +668,7 @@ namespace roubamonteproj
         public Carta Pop()
         {
             if (topo == 0)
-                throw new Exception("Erro! Pilha vazia.");
+                throw new Exception("Erro!");
 
             topo = topo - 1;
             return array[topo];
@@ -601,5 +676,91 @@ namespace roubamonteproj
 
         public Carta[] Array { get { return array; } set { array = value; } }
         public int Topo { get { return topo; } set { topo = value; } }
+    }
+
+    public class Fila
+    {
+        private Celula primeiro, ultimo;
+
+        public Celula Primeiro
+        {
+            get { return primeiro; }
+            set { primeiro = value; }
+        }
+
+        public Celula Ultimo
+        {
+            get { return ultimo; }
+            set { ultimo = value; }
+        }
+
+        public Fila()
+        {
+            primeiro = new Celula();
+            ultimo = primeiro;
+        }
+
+        public void Inserir(int x)
+        {
+            ultimo.Prox = new Celula(x);
+            ultimo = ultimo.Prox;
+        }
+
+        public int Remover()
+        {
+            if (primeiro == ultimo)
+                throw new Exception("Erro!");
+
+            Celula tmp = primeiro;
+            primeiro = primeiro.Prox;
+            int elemento = primeiro.Elemento;
+            tmp.Prox = null;
+            tmp = null;
+
+            return elemento;
+        }
+
+        public int Count()
+        {
+            int contador = 0;
+            var atual = Primeiro.Prox;
+            while (atual != null)
+            {
+                contador++;
+                atual = atual.Prox;
+            }
+
+            return contador;
+        }
+    }
+
+    public class Celula
+    {
+        private int elemento;
+        private Celula prox;
+
+        public Celula()
+        {
+            this.elemento = 0;
+            this.prox = null;
+        }
+
+        public Celula(int elemento)
+        {
+            this.elemento = elemento;
+            this.prox = null;
+        }
+
+        public int Elemento
+        {
+            get { return this.elemento; }
+            set { this.elemento = value; }
+        }
+
+        public Celula Prox
+        {
+            get { return this.prox; }
+            set { this.prox = value; }
+        }
     }
 }
