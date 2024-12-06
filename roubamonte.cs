@@ -25,6 +25,8 @@ namespace roubamonteproj
 
         public void Iniciar()
         {
+            Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
+
             Reiniciar();
 
             int qtdJogadores = 0;
@@ -235,9 +237,11 @@ namespace roubamonteproj
             }
 
             Console.Clear();
+            Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
+
             if (vencedores.Count == 1)
             {
-                Console.WriteLine($"O grande vencedor é: {vencedores[0].Nome}, com {vencedores[0].QtdCartas} cartas!");
+                Console.WriteLine($"\nO grande vencedor é: {vencedores[0].Nome}, com {vencedores[0].QtdCartas} cartas!");
             }
 
             else
@@ -262,7 +266,7 @@ namespace roubamonteproj
             string nomeJogador = "";
             do
             {
-                Console.WriteLine("\n> Deseja ver o histórico de posições de algum jogador? (Digite 'nao' para pular.)");
+                Console.WriteLine("> Deseja ver o histórico de posições de algum jogador? (Digite 'nao' para pular)");
                 nomeJogador = Console.ReadLine();
 
                 if (nomeJogador.ToLower() != "nao")
@@ -298,7 +302,7 @@ namespace roubamonteproj
 
             else if (resp.ToLower() == "nao")
             {
-                Console.Write("\nGAME OVER!!!");
+                Console.Write("\nFIM DE JOGO!!!");
             }
 
             else
@@ -317,11 +321,16 @@ namespace roubamonteproj
                 }
 
                 Console.Clear();
-                Console.WriteLine("Monte de Compra (Cartas restantes: {0})", monte_de_compra.Topo - 1);
+                Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
+                Console.WriteLine("-------------------------------------------------------------");
+
+
                 Console.WriteLine("\nJogador da Vez: {0}", jogador.Nome);
 
                 Carta cartaDaVez = monte_de_compra.Pop();
                 Console.WriteLine("Carta da Vez: " + cartaDaVez);
+
+                Console.WriteLine("\nMonte de Compra (Cartas restantes: {0})", monte_de_compra.Topo);
 
                 Carta propioTopoDoMonte = null;
                 if (jogador.Monte.Count > 0)
@@ -329,7 +338,7 @@ namespace roubamonteproj
                     propioTopoDoMonte = jogador.Monte.Peek();
                 }
 
-                Console.WriteLine("\n---------------------------------------------------------");
+                Console.WriteLine("\n-------------------------------------------------------------");
                 Console.WriteLine("\nMonte dos Jogadores:");
                 MostrarMontesJogadores();
 
@@ -339,7 +348,7 @@ namespace roubamonteproj
                 if (VerificarMontesAdversarios(jogador, cartaDaVez))
                 {
                     Console.ReadLine();
-                    Console.WriteLine("Com isso o jogador pode comprar mais uma carta!");
+                    Console.Write("Com isso o jogador pode comprar mais uma carta!");
 
                     MostrarEstadoAtual();
                     Console.ReadLine();
@@ -349,7 +358,7 @@ namespace roubamonteproj
                 if (VerificarAreaDeDescarte(jogador, cartaDaVez))
                 {
                     Console.ReadLine();
-                    Console.WriteLine("Com isso o jogador pode comprar mais uma carta!");
+                    Console.Write("Com isso o jogador pode comprar mais uma carta!");
 
                     MostrarEstadoAtual();
                     Console.ReadLine();
@@ -359,7 +368,7 @@ namespace roubamonteproj
                 if (VerificarPropioMonte(jogador, cartaDaVez, propioTopoDoMonte))
                 {
                     Console.ReadLine();
-                    Console.WriteLine("Com isso o jogador pode comprar mais uma carta!");
+                    Console.Write("Com isso o jogador pode comprar mais uma carta!");
 
                     MostrarEstadoAtual();
                     Console.ReadLine();
@@ -369,7 +378,7 @@ namespace roubamonteproj
                 AdicionarCartaDescarte(cartaDaVez);
                 Console.ReadLine();
 
-                Console.WriteLine("O jogador passou a vez!");
+                Console.Write("O jogador passou a vez!");
                 Console.ReadLine();
                 break;
             }
@@ -414,8 +423,8 @@ namespace roubamonteproj
                 Jogador jogadorAlvo = candidatos[indiceAleatorio];
 
                 Console.ReadLine();
-                Console.WriteLine("\nResumo:");
-                Console.WriteLine("Você roubou o monte do jogador {0}.", jogadorAlvo.Nome);
+                Console.WriteLine("Resumo:");
+                Console.Write("Você roubou o monte do jogador {0}.", jogadorAlvo.Nome);
 
                 RoubarMonte(jogador, jogadorAlvo, cartaDaVez);
 
@@ -446,8 +455,8 @@ namespace roubamonteproj
                 jogador.AtualizarQtdCartas();
 
                 Console.ReadLine();
-                Console.WriteLine("\nResumo:");
-                Console.WriteLine("Você retirou uma carta da área de descarte!");
+                Console.WriteLine("Resumo:");
+                Console.Write("Você retirou uma carta da área de descarte!");
 
                 return true;
             }
@@ -463,8 +472,8 @@ namespace roubamonteproj
                 jogador.AtualizarQtdCartas();
 
                 Console.ReadLine();
-                Console.WriteLine("\nResumo:");
-                Console.WriteLine("A carta da vez foi adicionada ao seu próprio monte.");
+                Console.WriteLine("Resumo:");
+                Console.Write("A carta da vez foi adicionada ao seu próprio monte.");
 
                 return true;
             }
@@ -476,8 +485,8 @@ namespace roubamonteproj
             area_de_descarte.Add(cartaDaVez, cartaDaVez.Numero);
 
             Console.ReadLine();
-            Console.WriteLine("\nResumo:");
-            Console.WriteLine("A carta da vez foi descartada.");
+            Console.WriteLine("Resumo:");
+            Console.Write("A carta da vez foi descartada.");
         }
 
         private void MostrarEstadoAtual()
@@ -485,15 +494,17 @@ namespace roubamonteproj
             Console.ReadLine();
 
             Console.Clear();
-            Console.WriteLine("Estado Atual do Jogo:");
-            Console.WriteLine("\n---------------------------------------------------------");
+            Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
+            Console.WriteLine("-------------------------------------------------------------");
+
+            Console.WriteLine("\nEstado Atual do Jogo:");
+            Console.WriteLine("\n-------------------------------------------------------------");
             Console.WriteLine("\nMonte dos Jogadores:");
             MostrarMontesJogadores();
             Console.WriteLine("\nÁrea de Descarte:");
             MostrarAreaDescarte();
             Console.WriteLine();
 
-            Console.ReadLine();
             Console.Write("aperte ENTER para continuar...");
         }
 
@@ -533,7 +544,7 @@ namespace roubamonteproj
             {
                 Console.WriteLine("[ VAZIO ]");
             }
-            Console.WriteLine("\n---------------------------------------------------------");
+            Console.WriteLine("\n-------------------------------------------------------------");
         }
 
         public void MostrarMontesJogadores()
@@ -555,7 +566,7 @@ namespace roubamonteproj
 
                 Console.WriteLine();
             }
-            Console.WriteLine("---------------------------------------------------------");
+            Console.WriteLine("-------------------------------------------------------------");
         }
     }
 
