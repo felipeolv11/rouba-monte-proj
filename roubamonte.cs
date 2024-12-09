@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,15 +23,37 @@ namespace roubamonteproj
         private Jogador[] jogadores;
         private Pilha monte_de_compra = new Pilha();
         private Dictionary<Carta, int> area_de_descarte = new Dictionary<Carta, int>();
+        private int qtdJogadores;
+        private int qtdBaralhos;
+
+        private string linha = "-------------------------------------------------------------";
+        private string titulo = ".---.             .-.            .-..-.             .-.      \r\n" +
+                                ": .; :            : :            : `' :            .' `.     \r\n" +
+                                ":   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n" +
+                                ": :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n" +
+                                ":_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n";
+
+        private string log = "roubamonte_log.txt";
+
+        public void RegistrarLog(string mensagem)
+        {
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(log, true))
+                {
+                    sw.WriteLine(mensagem);
+                }
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro: " + ex.Message);
+            }
+        }
 
         public void Iniciar()
         {
-            Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
-
-            Reiniciar();
-
-            int qtdJogadores = 0;
-            int qtdBaralhos = 0;
+            Console.WriteLine(titulo);
 
             do
             {
@@ -59,6 +82,9 @@ namespace roubamonteproj
             jogadores = new Jogador[qtdJogadores];
             monte_de_compra = new Pilha(52 * qtdBaralhos);
 
+            RegistrarLog("O jogo foi iniciado com " + qtdJogadores + " jogadores.");
+            RegistrarLog("O baralho foi criado com " + (52 * qtdBaralhos) + " cartas.");
+
             Console.WriteLine();
             for (int i = 0; i < qtdJogadores; i++)
             {
@@ -68,6 +94,18 @@ namespace roubamonteproj
                 jogadores[i] = new Jogador(nome);
             }
 
+            string nomesJogadores = "";
+            for (int i = 0; i < jogadores.Length; i++)
+            {
+                nomesJogadores += jogadores[i].Nome;
+
+                if (i < jogadores.Length - 1)
+                {
+                    nomesJogadores += ", ";
+                }
+            }
+            RegistrarLog("Jogadores da partida: " + nomesJogadores);
+
             Embaralhar(qtdBaralhos);
             Jogar();
         }
@@ -76,6 +114,11 @@ namespace roubamonteproj
         {
             monte_de_compra = new Pilha();
             area_de_descarte = new Dictionary<Carta, int>();
+
+            foreach (var jogador in jogadores)
+            {
+                jogador.LimparCartas();
+            }
         }
 
         public void Embaralhar(int qtdBaralhos)
@@ -237,11 +280,12 @@ namespace roubamonteproj
             }
 
             Console.Clear();
-            Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
+            Console.WriteLine(titulo);
 
             if (vencedores.Count == 1)
             {
-                Console.WriteLine($"\nO grande vencedor é: {vencedores[0].Nome}, com {vencedores[0].QtdCartas} cartas!");
+                Console.WriteLine("\nO grande vencedor é: {0}, com {1} cartas!", vencedores[0].Nome, vencedores[0].QtdCartas);
+                RegistrarLog("O grande vencedor é: " + vencedores[0].Nome + ", com " + vencedores[0].QtdCartas + " cartas.");
             }
 
             else
@@ -249,7 +293,8 @@ namespace roubamonteproj
                 Console.WriteLine("Os grandes vencedores são:");
                 foreach (var vencedor in vencedores)
                 {
-                    Console.WriteLine($"{vencedor.Nome}, com {vencedor.QtdCartas} cartas!");
+                    Console.WriteLine("{0}, com {1} cartas!", vencedor.Nome, vencedores[0].QtdCartas);
+                    RegistrarLog("O grande vencedor é: " + vencedores[0].Nome + ", com " + vencedores[0].QtdCartas + " cartas.");
                 }
             }
 
@@ -260,49 +305,68 @@ namespace roubamonteproj
                 var jogador = jogadores[i];
                 jogador.AtualizarPosicao(i + 1);
                 Console.WriteLine("Posição: {0}° | Jogador: {1} | Cartas no Monte: {2}", i + 1, jogador.Nome, jogador.QtdCartas);
+                RegistrarLog("Posição: " + (i + 1) + " | Jogador: " + jogador.Nome + " | Cartas no Monte: " + jogador.QtdCartas);
             }
 
             Console.ReadLine();
-            string nomeJogador = "";
-            do
-            {
-                Console.WriteLine("> Deseja ver o histórico de posições de algum jogador? (Digite 'nao' para pular)");
-                nomeJogador = Console.ReadLine();
-
-                if (nomeJogador.ToLower() != "nao")
-                {
-                    bool jogadorEncontrado = false;
-
-                    foreach (var jogador in jogadores)
-                    {
-                        if (jogador.Nome.ToLower() == nomeJogador.ToLower())
-                        {
-                            jogador.ExibirHistoricoPosicoes();
-                            jogadorEncontrado = true;
-                            break;
-                        }
-                    }
-
-                    if (!jogadorEncontrado)
-                    {
-                        Console.WriteLine("Jogador não encontrado. Tente novamente.");
-                    }
-                }
-
-            } while (nomeJogador.ToLower() != "nao");
-
-            Console.WriteLine("\nDeseja jogar novamente? (sim/nao)");
+            Console.WriteLine("> Deseja jogar novamente? (sim/nao)");
             string resp = Console.ReadLine();
 
             if (resp.ToLower() == "sim")
             {
                 Console.Clear();
-                Iniciar();
+                Console.WriteLine(titulo);
+
+                do
+                {
+                    Console.WriteLine("\n> Quantos baralhos vão ser utilizados? (1-4)");
+                    qtdBaralhos = int.Parse(Console.ReadLine());
+
+                    if (qtdBaralhos < 1 || qtdBaralhos > 4)
+                    {
+                        Console.WriteLine("Opção inválida! Tente novamente.");
+                    }
+
+                } while (qtdBaralhos < 1 || qtdBaralhos > 4);
+
+                Reiniciar();
+                monte_de_compra = new Pilha(52 * qtdBaralhos);
+                
+                Embaralhar(qtdBaralhos);
+                Jogar();
             }
 
             else if (resp.ToLower() == "nao")
             {
-                Console.Write("\nFIM DE JOGO!!!");
+                string nomeJogador = "";
+                do
+                {
+                    Console.WriteLine("\n> Deseja ver o histórico de posições de algum jogador? (Digite 'nao' para pular)");
+                    nomeJogador = Console.ReadLine();
+
+                    if (nomeJogador.ToLower() != "nao")
+                    {
+                        bool jogadorEncontrado = false;
+
+                        foreach (var jogador in jogadores)
+                        {
+                            if (jogador.Nome.ToLower() == nomeJogador.ToLower())
+                            {
+                                jogador.ExibirHistoricoPosicoes();
+                                jogadorEncontrado = true;
+                                break;
+                            }
+                        }
+
+                        if (!jogadorEncontrado)
+                        {
+                            Console.WriteLine("Jogador não encontrado. Tente novamente.");
+                        }
+                    }
+
+                } while (nomeJogador.ToLower() != "nao");
+
+                Console.WriteLine("\nFIM DE JOGO!!!");
             }
 
             else
@@ -321,14 +385,15 @@ namespace roubamonteproj
                 }
 
                 Console.Clear();
-                Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
-                Console.WriteLine("-------------------------------------------------------------");
-
+                Console.WriteLine(titulo);
+                Console.WriteLine(linha);
 
                 Console.WriteLine("\nJogador da Vez: {0}", jogador.Nome);
 
                 Carta cartaDaVez = monte_de_compra.Pop();
                 Console.WriteLine("Carta da Vez: " + cartaDaVez);
+
+                RegistrarLog(jogador.Nome + " retirou a carta " + cartaDaVez);
 
                 Console.WriteLine("\nMonte de Compra (Cartas restantes: {0})", monte_de_compra.Topo);
 
@@ -338,7 +403,7 @@ namespace roubamonteproj
                     propioTopoDoMonte = jogador.Monte.Peek();
                 }
 
-                Console.WriteLine("\n-------------------------------------------------------------");
+                Console.WriteLine("\n{0}", linha);
                 Console.WriteLine("\nMonte dos Jogadores:");
                 MostrarMontesJogadores();
 
@@ -349,7 +414,7 @@ namespace roubamonteproj
                 {
                     Console.ReadLine();
                     Console.Write("Com isso o jogador pode comprar mais uma carta!");
-
+                    RegistrarLog(jogador.Nome + " roubou o monte de um adversário.");
                     MostrarEstadoAtual();
                     Console.ReadLine();
                     continue;
@@ -359,7 +424,7 @@ namespace roubamonteproj
                 {
                     Console.ReadLine();
                     Console.Write("Com isso o jogador pode comprar mais uma carta!");
-
+                    RegistrarLog(jogador.Nome + " retirou uma carta da área de descarte.");
                     MostrarEstadoAtual();
                     Console.ReadLine();
                     continue;
@@ -369,13 +434,14 @@ namespace roubamonteproj
                 {
                     Console.ReadLine();
                     Console.Write("Com isso o jogador pode comprar mais uma carta!");
-
+                    RegistrarLog(jogador.Nome + " colocou a carta " + cartaDaVez + " no seu próprio monte.");
                     MostrarEstadoAtual();
                     Console.ReadLine();
                     continue;
                 }
 
                 AdicionarCartaDescarte(cartaDaVez);
+                RegistrarLog(jogador.Nome + " descartou a carta " + cartaDaVez);
                 Console.ReadLine();
 
                 Console.Write("O jogador passou a vez!");
@@ -494,11 +560,11 @@ namespace roubamonteproj
             Console.ReadLine();
 
             Console.Clear();
-            Console.WriteLine(".---.             .-.            .-..-.             .-.      \r\n: .; :            : :            : `' :            .' `.     \r\n:   .' .--. .-..-.: `-.  .--.    : .. : .--. ,-.,-.`. .'.--. \r\n: :.`.' .; :: :; :' .; :' .; ;   : :; :' .; :: ,. : : :' '_.'\r\n:_;:_;`.__.'`.__.'`.__.'`.__,_;  :_;:_;`.__.':_;:_; :_;`.__.'\r\n");
-            Console.WriteLine("-------------------------------------------------------------");
+            Console.WriteLine(titulo);
+            Console.WriteLine(linha);
 
             Console.WriteLine("\nEstado Atual do Jogo:");
-            Console.WriteLine("\n-------------------------------------------------------------");
+            Console.WriteLine("\n{0}", linha);
             Console.WriteLine("\nMonte dos Jogadores:");
             MostrarMontesJogadores();
             Console.WriteLine("\nÁrea de Descarte:");
@@ -544,7 +610,7 @@ namespace roubamonteproj
             {
                 Console.WriteLine("[ VAZIO ]");
             }
-            Console.WriteLine("\n-------------------------------------------------------------");
+            Console.WriteLine("\n{0}", linha);
         }
 
         public void MostrarMontesJogadores()
@@ -566,7 +632,7 @@ namespace roubamonteproj
 
                 Console.WriteLine();
             }
-            Console.WriteLine("-------------------------------------------------------------");
+            Console.WriteLine("{0}", linha);
         }
     }
 
@@ -583,6 +649,12 @@ namespace roubamonteproj
             this.nome = nome;
             this.qtdCartas = 0;
             this.posicao = 0;
+        }
+
+        public void LimparCartas()
+        {
+            this.QtdCartas = 0;
+            this.monte.Clear();
         }
 
         public void AtualizarQtdCartas()
@@ -607,11 +679,6 @@ namespace roubamonteproj
             Console.WriteLine($"\nHistórico de {nome}:");
 
             var atual = historicoPosicoes.Primeiro.Prox;
-            if (atual == null)
-            {
-                Console.WriteLine("Sem histórico de posições.");
-                return;
-            }
 
             while (atual != null)
             {
